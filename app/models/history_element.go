@@ -25,7 +25,7 @@ func DeleteHistoryElement(id int) *HistoryElement {
 	return nil
 }
 
-func ClearUserHistoryElement(userId int) []*HistoryElement {
+func ClearUserHistoryElements(userId int) []*HistoryElement {
 	return nil
 }
 

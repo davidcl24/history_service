@@ -84,7 +84,7 @@ func (h HistoryElementHandler) DeleteHistoryElement(w http.ResponseWriter, r *ht
 
 func (h HistoryElementHandler) ClearUserHistory(w http.ResponseWriter, r *http.Request) {
 	userId, _ := strconv.Atoi(chi.URLParam(r, "user_id"))
-	historyElements := models.ClearUserHistoryElement(userId)
+	historyElements := models.ClearUserHistoryElements(userId)
 	if historyElements == nil {
 		http.Error(w, "User not found", http.StatusNotFound)
 		return
