@@ -1,22 +1,46 @@
 package main
 
 import (
+	"database/sql"
+	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
+	"github.com/davidcl24/history_service/app/config"
 	"github.com/davidcl24/history_service/app/handlers"
+
+	_ "github.com/lib/pq"
 )
 
-func main() {
-	router := chi.NewRouter()
+var router *chi.Mux
+var db *sql.DB
+var dbConfig config.DBConfig
+
+func init() {
+	router = chi.NewRouter()
 	router.Use(middleware.Logger)
-	router.Mount("api/history", HistoryRouters())
+	router.Use(middleware.Recoverer)
+
+	dbConfig = *config.NewEnvDBConfig()
+
+	connectionString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		dbConfig.Host, dbConfig.Port, dbConfig.Username, dbConfig.Password, dbConfig.Database)
+	var err error
+	db, err = sql.Open("postgres", connectionString)
+	if err != nil {
+		log.Fatalf("Error connecting to database: %v", err)
+	}
+}
+
+func main() {
+	router.Mount("api/history", historyRouters())
 	http.ListenAndServe(":4000", router)
 }
 
-func HistoryRouters() chi.Router {
+func historyRouters() chi.Router {
 	router := chi.NewRouter()
 	historyElementHandler := handlers.HistoryElementHandler{}
 	router.Use(middleware.Logger)
@@ -26,5 +50,6 @@ func HistoryRouters() chi.Router {
 	router.Patch("/{id}", historyElementHandler.UpdateHistoryElement)
 	router.Delete("/{id}", historyElementHandler.DeleteHistoryElement)
 	router.Delete("/user/{user_id}", historyElementHandler.ClearUserHistory)
+
 	return router
 }
