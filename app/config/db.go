@@ -12,10 +12,17 @@ type DBConfig struct {
 
 func NewEnvDBConfig() *DBConfig {
 	return &DBConfig{
-		Host:     os.Getenv("DB_HOST"),
-		Port:     os.Getenv("DB_PORT"),
-		Username: os.Getenv("DB_USERNAME"),
-		Password: os.Getenv("DB_PASSWORD"),
-		Database: os.Getenv("DB_DATABASE"),
+		Host:     getEnv("DB_HOST", "db"),
+		Port:     getEnv("DB_PORT", "5432"),
+		Username: getEnv("DB_USERNAME", "default"),
+		Password: getEnv("DB_PASSWORD", "example"),
+		Database: getEnv("DB_DATABASE", "db"),
 	}
+}
+
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
 }
