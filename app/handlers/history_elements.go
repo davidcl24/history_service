@@ -87,7 +87,7 @@ func (h HistoryElementHandler) ClearUserHistory(w http.ResponseWriter, r *http.R
 	userId, _ := strconv.Atoi(chi.URLParam(r, "user_id"))
 	historyElements := h.DB.ClearUserHistoryElements(userId)
 	if historyElements == nil {
-		http.Error(w, "Watch History already empty or user doesn't exist", http.StatusNotFound)
+		http.Error(w, "Watch history already empty or user doesn't exist", http.StatusNotFound)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
