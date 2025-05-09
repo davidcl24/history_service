@@ -11,23 +11,24 @@ import (
 
 	"github.com/davidcl24/history_service/app/config"
 	"github.com/davidcl24/history_service/app/handlers"
+	"github.com/davidcl24/history_service/app/models"
 
 	_ "github.com/lib/pq"
 )
 
 var router *chi.Mux
 var db *sql.DB
-var dbConfig config.DBConfig
 
 func init() {
 	router = chi.NewRouter()
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 
-	dbConfig = *config.NewEnvDBConfig()
+	dbConfig := *config.NewEnvDBConfig()
 
 	connectionString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		dbConfig.Host, dbConfig.Port, dbConfig.Username, dbConfig.Password, dbConfig.Database)
+
 	var err error
 	db, err = sql.Open("postgres", connectionString)
 	if err != nil {
@@ -42,8 +43,11 @@ func main() {
 
 func historyRouters() chi.Router {
 	router := chi.NewRouter()
-	historyElementHandler := handlers.HistoryElementHandler{}
+	dbWrapper := models.NewDB(db)
+	historyElementHandler := handlers.HistoryElementHandler{DB: dbWrapper}
+
 	router.Use(middleware.Logger)
+
 	router.Get("/user/{user_id}", historyElementHandler.ListUserHistoryElements)
 	router.Get("/{id}", historyElementHandler.GetHistoryElement)
 	router.Post("/", historyElementHandler.CreateHistoryElement)

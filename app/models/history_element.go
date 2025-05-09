@@ -1,34 +1,107 @@
 package models
 
+import "time"
+
 type HistoryElement struct {
-	ID        int `json:"id"`
-	UserID    int `json:"user_id"`
-	MovieID   int `json:"movie_id"`
-	EpisodeID int `json:"episode_id"`
-	WatchTime int `json:"watch_time"`
-	Progress  int `json:"progress"`
+	ID        int       `json:"id"`
+	UserID    int       `json:"user_id"`
+	MovieID   int       `json:"movie_id"`
+	EpisodeID int       `json:"episode_id"`
+	WatchDate time.Time `json:"watch_date"`
+	Progress  int       `json:"progress"`
 }
 
-func GetAllUserHistoryElements(userId int) []*HistoryElement {
-	return nil
+func (db *DB) GetAllUserHistoryElements(userId int) []*HistoryElement {
+	query := `
+		SELECT id, user_id, movie_id, episode_id, watch_date, progress
+		FROM watch_history
+		WHERE user_id = $1`
+	rows, err := db.Conn.Query(query, userId)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+
+	var elements []*HistoryElement
+	for rows.Next() {
+		elem := &HistoryElement{}
+		err := rows.Scan(&elem.ID, &elem.UserID, &elem.MovieID, &elem.EpisodeID, &elem.WatchDate, &elem.Progress)
+		if err != nil {
+			continue
+		}
+		elements = append(elements, elem)
+	}
+	return elements
 }
 
-func GetHistoryElementByID(id int) *HistoryElement {
-	return nil
+func (db *DB) GetHistoryElementByID(id int) *HistoryElement {
+	query := `
+		SELECT id, user_id, movie_id, episode_id, watch_date, progress
+		FROM watch_history
+		WHERE id = $1`
+	elem := &HistoryElement{}
+	err := db.Conn.QueryRow(query, id).Scan(&elem.ID, &elem.UserID, &elem.MovieID, &elem.EpisodeID, &elem.WatchDate, &elem.Progress)
+	if err != nil {
+		return nil
+	}
+	return elem
 }
 
-func AddHistoryElement(historyElement *HistoryElement) *HistoryElement {
-	return nil
+func (db *DB) AddHistoryElement(historyElement *HistoryElement) *HistoryElement {
+	query := `
+		INSERT INTO watch_history (user_id, movie_id, episode_id, watch_date, progress)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING id`
+	err := db.Conn.QueryRow(
+		query,
+		historyElement.UserID,
+		historyElement.MovieID,
+		historyElement.EpisodeID,
+		historyElement.WatchDate,
+		historyElement.Progress,
+	).Scan(&historyElement.ID)
+
+	if err != nil {
+		return nil
+	}
+	return historyElement
 }
 
-func DeleteHistoryElement(id int) *HistoryElement {
-	return nil
+func (db *DB) DeleteHistoryElement(id int) *HistoryElement {
+	element := db.GetHistoryElementByID(id)
+	if element == nil {
+		return nil
+	}
+
+	_, err := db.Conn.Exec("DELETE FROM watch_history WHERE id = $1", id)
+	if err != nil {
+		return nil
+	}
+	return element
 }
 
-func ClearUserHistoryElements(userId int) []*HistoryElement {
-	return nil
+func (db *DB) ClearUserHistoryElements(userId int) []*HistoryElement {
+	elements := db.GetAllUserHistoryElements(userId)
+	if len(elements) == 0 {
+		return nil
+	}
+
+	_, err := db.Conn.Exec("DELETE FROM watch_history WHERE user_id = $1", userId)
+	if err != nil {
+		return nil
+	}
+	return elements
 }
 
-func UpdateHistoryElement(id int, historyElementUpdate HistoryElement) *HistoryElement {
-	return nil
+func (db *DB) UpdateHistoryElement(id int, historyElementUpdate HistoryElement) *HistoryElement {
+	_, err := db.Conn.Exec(`
+		UPDATE watch_history
+		SET user_id = $1, movie_id = $2, episode_id = $3, watch_date = $4, progress = $5
+		WHERE id = $6`,
+		historyElementUpdate.UserID, historyElementUpdate.MovieID, historyElementUpdate.EpisodeID, historyElementUpdate.WatchDate, historyElementUpdate.Progress, id,
+	)
+	if err != nil {
+		return nil
+	}
+	return db.GetHistoryElementByID(id)
 }
