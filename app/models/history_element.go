@@ -22,7 +22,7 @@ func (db *DB) GetAllUserHistoryElements(userId int) []*HistoryElement {
 	}
 	defer rows.Close()
 
-	var elements []*HistoryElement
+	elements := []*HistoryElement{}
 	for rows.Next() {
 		elem := &HistoryElement{}
 		err := rows.Scan(&elem.ID, &elem.UserID, &elem.MovieID, &elem.EpisodeID, &elem.WatchDate, &elem.Progress)
@@ -47,7 +47,7 @@ func (db *DB) GetHistoryElementByID(id int) *HistoryElement {
 	return elem
 }
 
-func (db *DB) AddHistoryElement(historyElement *HistoryElement) *HistoryElement {
+func (db *DB) AddHistoryElement(historyElement *HistoryElement) (*HistoryElement, error) {
 	query := `
 		INSERT INTO watch_history (user_id, movie_id, episode_id, watch_date, progress)
 		VALUES ($1, $2, $3, $4, $5)
@@ -62,9 +62,9 @@ func (db *DB) AddHistoryElement(historyElement *HistoryElement) *HistoryElement 
 	).Scan(&historyElement.ID)
 
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return historyElement
+	return historyElement, nil
 }
 
 func (db *DB) DeleteHistoryElement(id int) *HistoryElement {

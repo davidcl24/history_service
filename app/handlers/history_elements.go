@@ -40,15 +40,22 @@ func (h HistoryElementHandler) GetHistoryElement(w http.ResponseWriter, r *http.
 
 func (h HistoryElementHandler) CreateHistoryElement(w http.ResponseWriter, r *http.Request) {
 	var historyElement models.HistoryElement
+
 	err := json.NewDecoder(r.Body).Decode(&historyElement)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid request body: "+err.Error(), http.StatusBadRequest)
 		return
 	}
-	h.DB.AddHistoryElement(&historyElement)
-	err = json.NewEncoder(w).Encode(historyElement)
+
+	createdElement, err := h.DB.AddHistoryElement(&historyElement)
 	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		http.Error(w, "Failed to insert element: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(createdElement)
+	if err != nil {
+		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 }

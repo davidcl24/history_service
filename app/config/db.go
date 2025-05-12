@@ -12,11 +12,11 @@ type DBConfig struct {
 
 func NewEnvDBConfig() *DBConfig {
 	return &DBConfig{
-		Host:     getEnv("DB_HOST", "db"),
+		Host:     getEnv("DB_HOST", "localhost"),
 		Port:     getEnv("DB_PORT", "5432"),
 		Username: getEnv("DB_USERNAME", "default"),
 		Password: getEnv("DB_PASSWORD", "example"),
-		Database: getEnv("DB_DATABASE", "db"),
+		Database: getEnv("DB_DATABASE", "streamingdb"),
 	}
 }
 
