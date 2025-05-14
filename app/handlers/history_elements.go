@@ -17,24 +17,28 @@ type HistoryElementHandler struct {
 func (h *HistoryElementHandler) ListUserHistoryElements(w http.ResponseWriter, r *http.Request) {
 	userId, _ := strconv.Atoi(chi.URLParam(r, "user_id"))
 
-	err := json.NewEncoder(w).Encode(h.DB.GetAllUserHistoryElements(userId))
+	elements, err := h.DB.GetAllUserHistoryElements(userId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	json.NewEncoder(w).Encode(elements)
 }
 
 func (h HistoryElementHandler) GetHistoryElement(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 
-	historyElement := h.DB.GetHistoryElementByID(id)
+	historyElement, err := h.DB.GetHistoryElementByID(id)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	if historyElement == nil {
 		http.Error(w, "Element not found", http.StatusNotFound)
-	}
-	err := json.NewEncoder(w).Encode(historyElement)
-	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
+	} else {
+		json.NewEncoder(w).Encode(historyElement)
 	}
 }
 

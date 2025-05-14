@@ -29,9 +29,8 @@ func init() {
 	connectionString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		dbConfig.Host, dbConfig.Port, dbConfig.Username, dbConfig.Password, dbConfig.Database)
 
-	var err error
-	db, err = sql.Open("postgres", connectionString)
-	if err != nil {
+	db, _ = sql.Open("postgres", connectionString)
+	if err := db.Ping(); err != nil {
 		log.Fatalf("Error connecting to database: %v", err)
 	}
 }

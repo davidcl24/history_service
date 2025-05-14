@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"errors"
+	"net"
+	"time"
+)
 
 type HistoryElement struct {
 	ID        int       `json:"id"`
@@ -11,14 +15,14 @@ type HistoryElement struct {
 	Progress  int       `json:"progress"`
 }
 
-func (db *DB) GetAllUserHistoryElements(userId int) []*HistoryElement {
+func (db *DB) GetAllUserHistoryElements(userId int) ([]*HistoryElement, error) {
 	query := `
 		SELECT id, user_id, movie_id, episode_id, watch_date, progress
 		FROM watch_history
 		WHERE user_id = $1`
 	rows, err := db.Conn.Query(query, userId)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -31,20 +35,24 @@ func (db *DB) GetAllUserHistoryElements(userId int) []*HistoryElement {
 		}
 		elements = append(elements, elem)
 	}
-	return elements
+	return elements, nil
 }
 
-func (db *DB) GetHistoryElementByID(id int) *HistoryElement {
+func (db *DB) GetHistoryElementByID(id int) (*HistoryElement, error) {
 	query := `
 		SELECT id, user_id, movie_id, episode_id, watch_date, progress
 		FROM watch_history
 		WHERE id = $1`
 	elem := &HistoryElement{}
 	err := db.Conn.QueryRow(query, id).Scan(&elem.ID, &elem.UserID, &elem.MovieID, &elem.EpisodeID, &elem.WatchDate, &elem.Progress)
-	if err != nil {
-		return nil
+	var opErr *net.OpError
+	if errors.As(err, &opErr) {
+		return nil, err
 	}
-	return elem
+	if err != nil {
+		return nil, nil
+	}
+	return elem, nil
 }
 
 func (db *DB) AddHistoryElement(historyElement *HistoryElement) (*HistoryElement, error) {
@@ -68,7 +76,7 @@ func (db *DB) AddHistoryElement(historyElement *HistoryElement) (*HistoryElement
 }
 
 func (db *DB) DeleteHistoryElement(id int) *HistoryElement {
-	element := db.GetHistoryElementByID(id)
+	element, _ := db.GetHistoryElementByID(id)
 	if element == nil {
 		return nil
 	}
@@ -81,7 +89,7 @@ func (db *DB) DeleteHistoryElement(id int) *HistoryElement {
 }
 
 func (db *DB) ClearUserHistoryElements(userId int) []*HistoryElement {
-	elements := db.GetAllUserHistoryElements(userId)
+	elements, _ := db.GetAllUserHistoryElements(userId)
 	if len(elements) == 0 {
 		return nil
 	}
@@ -103,5 +111,6 @@ func (db *DB) UpdateHistoryElement(id int, historyElementUpdate HistoryElement) 
 	if err != nil {
 		return nil
 	}
-	return db.GetHistoryElementByID(id)
+	elem, _ := db.GetHistoryElementByID(id)
+	return elem
 }
