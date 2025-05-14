@@ -75,33 +75,43 @@ func (db *DB) AddHistoryElement(historyElement *HistoryElement) (*HistoryElement
 	return historyElement, nil
 }
 
-func (db *DB) DeleteHistoryElement(id int) *HistoryElement {
-	element, _ := db.GetHistoryElementByID(id)
+func (db *DB) DeleteHistoryElement(id int) (*HistoryElement, error) {
+	element, err := db.GetHistoryElementByID(id)
+
+	if err != nil {
+		return nil, err
+	}
+
 	if element == nil {
-		return nil
+		return nil, nil
 	}
 
-	_, err := db.Conn.Exec("DELETE FROM watch_history WHERE id = $1", id)
+	_, err = db.Conn.Exec("DELETE FROM watch_history WHERE id = $1", id)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return element
+	return element, nil
 }
 
-func (db *DB) ClearUserHistoryElements(userId int) []*HistoryElement {
-	elements, _ := db.GetAllUserHistoryElements(userId)
+func (db *DB) ClearUserHistoryElements(userId int) ([]*HistoryElement, error) {
+	elements, err := db.GetAllUserHistoryElements(userId)
+
+	if err != nil {
+		return nil, err
+	}
+
 	if len(elements) == 0 {
-		return nil
+		return nil, nil
 	}
 
-	_, err := db.Conn.Exec("DELETE FROM watch_history WHERE user_id = $1", userId)
+	_, err = db.Conn.Exec("DELETE FROM watch_history WHERE user_id = $1", userId)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return elements
+	return elements, nil
 }
 
-func (db *DB) UpdateHistoryElement(id int, historyElementUpdate HistoryElement) *HistoryElement {
+func (db *DB) UpdateHistoryElement(id int, historyElementUpdate HistoryElement) (*HistoryElement, error) {
 	_, err := db.Conn.Exec(`
 		UPDATE watch_history
 		SET user_id = $1, movie_id = $2, episode_id = $3, watch_date = $4, progress = $5
@@ -109,8 +119,8 @@ func (db *DB) UpdateHistoryElement(id int, historyElementUpdate HistoryElement) 
 		historyElementUpdate.UserID, historyElementUpdate.MovieID, historyElementUpdate.EpisodeID, historyElementUpdate.WatchDate, historyElementUpdate.Progress, id,
 	)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	elem, _ := db.GetHistoryElementByID(id)
-	return elem
+	return elem, nil
 }

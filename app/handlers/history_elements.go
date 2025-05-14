@@ -22,7 +22,11 @@ func (h *HistoryElementHandler) ListUserHistoryElements(w http.ResponseWriter, r
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(elements)
+	err = json.NewEncoder(w).Encode(elements)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h HistoryElementHandler) GetHistoryElement(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +42,11 @@ func (h HistoryElementHandler) GetHistoryElement(w http.ResponseWriter, r *http.
 	if historyElement == nil {
 		http.Error(w, "Element not found", http.StatusNotFound)
 	} else {
-		json.NewEncoder(w).Encode(historyElement)
+		err = json.NewEncoder(w).Encode(historyElement)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -72,7 +80,12 @@ func (h HistoryElementHandler) UpdateHistoryElement(w http.ResponseWriter, r *ht
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	updatedHistoryElement := h.DB.UpdateHistoryElement(id, historyElement)
+	updatedHistoryElement, err := h.DB.UpdateHistoryElement(id, historyElement)
+
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 	if updatedHistoryElement == nil {
 		http.Error(w, "Element not found", http.StatusNotFound)
 		return
@@ -86,7 +99,12 @@ func (h HistoryElementHandler) UpdateHistoryElement(w http.ResponseWriter, r *ht
 
 func (h HistoryElementHandler) DeleteHistoryElement(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-	historyElement := h.DB.DeleteHistoryElement(id)
+	historyElement, err := h.DB.DeleteHistoryElement(id)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	if historyElement == nil {
 		http.Error(w, "Element not found", http.StatusNotFound)
 		return
@@ -96,9 +114,15 @@ func (h HistoryElementHandler) DeleteHistoryElement(w http.ResponseWriter, r *ht
 
 func (h HistoryElementHandler) ClearUserHistory(w http.ResponseWriter, r *http.Request) {
 	userId, _ := strconv.Atoi(chi.URLParam(r, "user_id"))
-	historyElements := h.DB.ClearUserHistoryElements(userId)
+	historyElements, err := h.DB.ClearUserHistoryElements(userId)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	if historyElements == nil {
-		http.Error(w, "Watch history already empty or user doesn't exist", http.StatusNotFound)
+		http.Error(w, "User not found", http.StatusNotFound)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
