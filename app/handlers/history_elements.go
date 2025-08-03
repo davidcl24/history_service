@@ -29,7 +29,7 @@ func (h *HistoryElementHandler) ListUserHistoryElements(w http.ResponseWriter, r
 	}
 }
 
-func (h HistoryElementHandler) GetHistoryElement(w http.ResponseWriter, r *http.Request) {
+func (h *HistoryElementHandler) GetHistoryElement(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 
 	historyElement, err := h.DB.GetHistoryElementByID(id)
@@ -50,7 +50,7 @@ func (h HistoryElementHandler) GetHistoryElement(w http.ResponseWriter, r *http.
 	}
 }
 
-func (h HistoryElementHandler) CreateHistoryElement(w http.ResponseWriter, r *http.Request) {
+func (h *HistoryElementHandler) CreateHistoryElement(w http.ResponseWriter, r *http.Request) {
 	var historyElement models.HistoryElement
 
 	err := json.NewDecoder(r.Body).Decode(&historyElement)
@@ -72,7 +72,7 @@ func (h HistoryElementHandler) CreateHistoryElement(w http.ResponseWriter, r *ht
 	}
 }
 
-func (h HistoryElementHandler) UpdateHistoryElement(w http.ResponseWriter, r *http.Request) {
+func (h *HistoryElementHandler) UpdateHistoryElement(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 	var historyElement models.HistoryElement
 	err := json.NewDecoder(r.Body).Decode(&historyElement)
@@ -97,7 +97,7 @@ func (h HistoryElementHandler) UpdateHistoryElement(w http.ResponseWriter, r *ht
 	}
 }
 
-func (h HistoryElementHandler) DeleteHistoryElement(w http.ResponseWriter, r *http.Request) {
+func (h *HistoryElementHandler) DeleteHistoryElement(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 	historyElement, err := h.DB.DeleteHistoryElement(id)
 
@@ -112,7 +112,7 @@ func (h HistoryElementHandler) DeleteHistoryElement(w http.ResponseWriter, r *ht
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h HistoryElementHandler) ClearUserHistory(w http.ResponseWriter, r *http.Request) {
+func (h *HistoryElementHandler) ClearUserHistory(w http.ResponseWriter, r *http.Request) {
 	userId, _ := strconv.Atoi(chi.URLParam(r, "user_id"))
 	historyElements, err := h.DB.ClearUserHistoryElements(userId)
 
