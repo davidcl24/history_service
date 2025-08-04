@@ -37,7 +37,7 @@ func init() {
 
 func main() {
 	router.Mount("/api/history", historyRouters())
-	http.ListenAndServe(":5000", router)
+	http.ListenAndServe(":7500", router)
 }
 
 func historyRouters() chi.Router {
