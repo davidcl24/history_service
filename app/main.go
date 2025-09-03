@@ -48,6 +48,7 @@ func historyRouters() chi.Router {
 	router.Use(middleware.Logger)
 
 	router.Get("/user/{user_id}", historyElementHandler.ListUserHistoryElements)
+	router.Get("/user/{user_id}/movie/{movie_id}", historyElementHandler.GetUserMovieHistoryElement)
 	router.Get("/{id}", historyElementHandler.GetHistoryElement)
 	router.Post("/", historyElementHandler.CreateHistoryElement)
 	router.Patch("/{id}", historyElementHandler.UpdateHistoryElement)
