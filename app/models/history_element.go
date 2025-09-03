@@ -38,13 +38,30 @@ func (db *DB) GetAllUserHistoryElements(userId int) ([]*HistoryElement, error) {
 	return elements, nil
 }
 
-func (db *DB) GetMovieHistoryElementFromUser(userId int, movieID int) (*HistoryElement, error) {
+func (db *DB) GetMovieHistoryElementFromUser(userId int, movieId int) (*HistoryElement, error) {
 	query := `
 		SELECT id, user_id, movie_id, episode_id, watch_date, progress
 		FROM watch_history
 		WHERE user_id = $1 AND movie_id = $2`
 	elem := &HistoryElement{}
-	err := db.Conn.QueryRow(query, userId, movieID).Scan(&elem.ID, &elem.UserID, &elem.MovieID, &elem.EpisodeID, &elem.WatchDate, &elem.Progress)
+	err := db.Conn.QueryRow(query, userId, movieId).Scan(&elem.ID, &elem.UserID, &elem.MovieID, &elem.EpisodeID, &elem.WatchDate, &elem.Progress)
+	var opErr *net.OpError
+	if errors.As(err, &opErr) {
+		return nil, err
+	}
+	if err != nil {
+		return nil, nil
+	}
+	return elem, nil
+}
+
+func (db *DB) GetEpisodeHistoryElementFromUser(userId int, episodeId int) (*HistoryElement, error) {
+	query := `
+		SELECT id, user_id, movie_id, episode_id, watch_date, progress
+		FROM watch_history
+		WHERE user_id = $1 AND episode_id = $2`
+	elem := &HistoryElement{}
+	err := db.Conn.QueryRow(query, userId, episodeId).Scan(&elem.ID, &elem.UserID, &elem.MovieID, &elem.EpisodeID, &elem.WatchDate, &elem.Progress)
 	var opErr *net.OpError
 	if errors.As(err, &opErr) {
 		return nil, err

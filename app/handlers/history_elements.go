@@ -51,6 +51,28 @@ func (h *HistoryElementHandler) GetUserMovieHistoryElement(w http.ResponseWriter
 	}
 }
 
+func (h *HistoryElementHandler) GetUserEpisodeHistoryElement(w http.ResponseWriter, r *http.Request) {
+	userId, _ := strconv.Atoi(chi.URLParam(r, "user_id"))
+	episodeId, _ := strconv.Atoi(chi.URLParam(r, "episode_id"))
+
+	historyElement, err := h.DB.GetEpisodeHistoryElementFromUser(userId, episodeId)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if historyElement == nil {
+		http.Error(w, "Element not found", http.StatusNotFound)
+	} else {
+		err = json.NewEncoder(w).Encode(historyElement)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 func (h *HistoryElementHandler) GetHistoryElement(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 
