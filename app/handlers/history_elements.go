@@ -1,3 +1,4 @@
+// It handles HTTP requests and makes a call to the desired CRUD operation
 package handlers
 
 import (
@@ -14,6 +15,7 @@ type HistoryElementHandler struct {
 	DB *models.DB
 }
 
+// Handles the specific GET HTTP request and returns a list of all history elements from the desired user in a JSON list.
 func (h *HistoryElementHandler) ListUserHistoryElements(w http.ResponseWriter, r *http.Request) {
 	userId, _ := strconv.Atoi(chi.URLParam(r, "user_id"))
 
@@ -29,6 +31,7 @@ func (h *HistoryElementHandler) ListUserHistoryElements(w http.ResponseWriter, r
 	}
 }
 
+// Handles the specific GET HTTP request and returns a history element with a movie from the desired user in a JSON list.
 func (h *HistoryElementHandler) GetUserMovieHistoryElement(w http.ResponseWriter, r *http.Request) {
 	userId, _ := strconv.Atoi(chi.URLParam(r, "user_id"))
 	movieId, _ := strconv.Atoi(chi.URLParam(r, "movie_id"))
@@ -51,6 +54,7 @@ func (h *HistoryElementHandler) GetUserMovieHistoryElement(w http.ResponseWriter
 	}
 }
 
+// Handles the specific GET HTTP request and returns a history element with an episode from the desired user in a JSON list.
 func (h *HistoryElementHandler) GetUserEpisodeHistoryElement(w http.ResponseWriter, r *http.Request) {
 	userId, _ := strconv.Atoi(chi.URLParam(r, "user_id"))
 	episodeId, _ := strconv.Atoi(chi.URLParam(r, "episode_id"))
@@ -73,6 +77,7 @@ func (h *HistoryElementHandler) GetUserEpisodeHistoryElement(w http.ResponseWrit
 	}
 }
 
+// Handles the specific GET HTTP request and returns a specific history element as a JSON.
 func (h *HistoryElementHandler) GetHistoryElement(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 
@@ -94,6 +99,7 @@ func (h *HistoryElementHandler) GetHistoryElement(w http.ResponseWriter, r *http
 	}
 }
 
+// Handles the specific POST HTTP request to create a new history element and returns it as a JSON if successful.
 func (h *HistoryElementHandler) CreateHistoryElement(w http.ResponseWriter, r *http.Request) {
 	var historyElement models.HistoryElement
 
@@ -116,6 +122,7 @@ func (h *HistoryElementHandler) CreateHistoryElement(w http.ResponseWriter, r *h
 	}
 }
 
+// Handles the specific PATCH HTTP request to update an existing history element and returns it as a JSON if successful.
 func (h *HistoryElementHandler) UpdateHistoryElement(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 	var historyElement models.HistoryElement
@@ -141,6 +148,8 @@ func (h *HistoryElementHandler) UpdateHistoryElement(w http.ResponseWriter, r *h
 	}
 }
 
+// Handles the specific DELETE HTTP request to remove a specific history element and returns the desired HTTP status code
+// if successful.
 func (h *HistoryElementHandler) DeleteHistoryElement(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 	historyElement, err := h.DB.DeleteHistoryElement(id)
@@ -156,6 +165,8 @@ func (h *HistoryElementHandler) DeleteHistoryElement(w http.ResponseWriter, r *h
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// Handles the specific DELETE HTTP request to remove all histroy from a use and returns the desired HTTP status code
+// if successful.
 func (h *HistoryElementHandler) ClearUserHistory(w http.ResponseWriter, r *http.Request) {
 	userId, _ := strconv.Atoi(chi.URLParam(r, "user_id"))
 	historyElements, err := h.DB.ClearUserHistoryElements(userId)

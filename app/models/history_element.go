@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Directly represents the entity in the database
 type HistoryElement struct {
 	ID        int       `json:"id"`
 	UserID    int       `json:"user_id"`
@@ -15,6 +16,7 @@ type HistoryElement struct {
 	Progress  int       `json:"progress"`
 }
 
+// Returns all of the history a user has watched
 func (db *DB) GetAllUserHistoryElements(userId int) ([]*HistoryElement, error) {
 	query := `
 		SELECT id, user_id, movie_id, episode_id, watch_date, progress
@@ -38,6 +40,7 @@ func (db *DB) GetAllUserHistoryElements(userId int) ([]*HistoryElement, error) {
 	return elements, nil
 }
 
+// Returns an specific history element with a movie from a user
 func (db *DB) GetMovieHistoryElementFromUser(userId int, movieId int) (*HistoryElement, error) {
 	query := `
 		SELECT id, user_id, movie_id, episode_id, watch_date, progress
@@ -55,6 +58,7 @@ func (db *DB) GetMovieHistoryElementFromUser(userId int, movieId int) (*HistoryE
 	return elem, nil
 }
 
+// Returns an specific history element with an episode from a user
 func (db *DB) GetEpisodeHistoryElementFromUser(userId int, episodeId int) (*HistoryElement, error) {
 	query := `
 		SELECT id, user_id, movie_id, episode_id, watch_date, progress
@@ -72,6 +76,7 @@ func (db *DB) GetEpisodeHistoryElementFromUser(userId int, episodeId int) (*Hist
 	return elem, nil
 }
 
+// Returns an specific history element
 func (db *DB) GetHistoryElementByID(id int) (*HistoryElement, error) {
 	query := `
 		SELECT id, user_id, movie_id, episode_id, watch_date, progress
@@ -89,6 +94,7 @@ func (db *DB) GetHistoryElementByID(id int) (*HistoryElement, error) {
 	return elem, nil
 }
 
+// Creates a new history element for a user
 func (db *DB) AddHistoryElement(historyElement *HistoryElement) (*HistoryElement, error) {
 	query := `
 		INSERT INTO watch_history (user_id, movie_id, episode_id, watch_date, progress)
@@ -109,6 +115,7 @@ func (db *DB) AddHistoryElement(historyElement *HistoryElement) (*HistoryElement
 	return historyElement, nil
 }
 
+// Removes a specific history element
 func (db *DB) DeleteHistoryElement(id int) (*HistoryElement, error) {
 	element, err := db.GetHistoryElementByID(id)
 
@@ -127,6 +134,7 @@ func (db *DB) DeleteHistoryElement(id int) (*HistoryElement, error) {
 	return element, nil
 }
 
+// Remove all of the watch history from a user
 func (db *DB) ClearUserHistoryElements(userId int) ([]*HistoryElement, error) {
 	elements, err := db.GetAllUserHistoryElements(userId)
 
@@ -145,6 +153,7 @@ func (db *DB) ClearUserHistoryElements(userId int) ([]*HistoryElement, error) {
 	return elements, nil
 }
 
+// Updates a particular history element
 func (db *DB) UpdateHistoryElement(id int, historyElementUpdate HistoryElement) (*HistoryElement, error) {
 	_, err := db.Conn.Exec(`
 		UPDATE watch_history
