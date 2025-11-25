@@ -1,4 +1,4 @@
-# FavouritesService
+# History Service
 
 This service manages the watch history a user can have for a streaming app
 
